@@ -215,6 +215,11 @@ func (s SearchServiceWrapper) Sort(field string, ascending bool) es.SearchServic
 	return WrapESSearchService(s.searchService.Sort(field, ascending))
 }
 
+// FetchSourceContext calls this function to internal service.
+func (s SearchServiceWrapper) FetchSourceContext(fetchSourceContext *elastic.FetchSourceContext) es.SearchService {
+	return WrapESSearchService(s.searchService.FetchSourceContext(fetchSourceContext))
+}
+
 // Do calls this function to internal service.
 func (s SearchServiceWrapper) Do(ctx context.Context) (*elastic.SearchResult, error) {
 	return s.searchService.Do(ctx)

@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/olivere/elastic"
-	"github.com/opentracing/opentracing-go"
+	opentracing "github.com/opentracing/opentracing-go"
 	ottag "github.com/opentracing/opentracing-go/ext"
 	otlog "github.com/opentracing/opentracing-go/log"
 	"github.com/uber/jaeger-lib/metrics"
@@ -62,6 +62,11 @@ const (
 	defaultDocCount  = 10000 // the default elasticsearch allowed limit
 	defaultNumTraces = 100
 )
+
+// SourceFields extracted from findTraceId
+type SourceFields struct {
+	TraceID dbmodel.TraceID `json:"traceID"`
+}
 
 var (
 	// ErrServiceNameNotSet occurs when attempting to query with an empty service name
@@ -282,6 +287,22 @@ func bucketToStringArray(buckets []*elastic.AggregationBucketKeyItem) ([]string,
 	return strings, nil
 }
 
+func hitsToStringArray(searchHits []*elastic.SearchHit) ([]string, error) {
+	strings := make([]string, len(searchHits))
+	for i, hit := range searchHits {
+
+		var sourceFields .SourceFields
+		// Notice the dereferencing asterisk *
+		err := json.Unmarshal(*hit.Source, &sourceFields)
+		if err != nil {
+			return nil, errors.New("non-string key found in aggregation")
+		}
+		str := string(sourceFields.TraceID)
+		strings[i] = str
+	}
+	return strings, nil
+}
+
 // FindTraces retrieves traces that match the traceQuery
 func (s *SpanReader) FindTraces(ctx context.Context, traceQuery *spanstore.TraceQueryParameters) ([]*model.Trace, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "FindTraces")
@@ -310,7 +331,6 @@ func (s *SpanReader) FindTraceIDs(ctx context.Context, traceQuery *spanstore.Tra
 	if err != nil {
 		return nil, err
 	}
-
 	return convertTraceIDsStringsToModels(esTraceIDs)
 }
 
@@ -514,21 +534,29 @@ func (s *SpanReader) findTraceIDs(ctx context.Context, traceQuery *spanstore.Tra
 	boolQuery := s.buildFindTraceIDsQuery(traceQuery)
 	jaegerIndices := s.timeRangeIndices(s.spanIndexPrefix, traceQuery.StartTimeMin, traceQuery.StartTimeMax)
 
-    searchService := s.client.Search(jaegerIndices...).
-			Size(0). // set to 0 because we don't want actual documents.
-			Aggregation(traceIDAggregation, aggregation).
-			IgnoreUnavailable(true).
-			Query(boolQuery)
-	
 	if len(traceQuery.Tags) == 0 {
-		searchService = s.client.Search(jaegerIndices...).
-			Size(0). // set to 0 because we don't want actual documents.
+		fetchSourceContext := elastic.NewFetchSourceContext(true).Include("traceID")
+		searchService := s.client.Search(jaegerIndices...).
+			Size(traceQuery.NumTraces).
 			Sort(startTimeField, false).
 			IgnoreUnavailable(true).
+			FetchSourceContext(fetchSourceContext).
 			Query(boolQuery)
-			
-	} 
-
+		searchResult, err := searchService.Do(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("search services failed: %w", err)
+		}
+		if len(searchResult.Hits.Hits) == 0 {
+			return []string{}, nil
+		}
+		traceIDHits := searchResult.Hits.Hits
+		return hitsToStringArray(traceIDHits)
+	}
+	searchService := s.client.Search(jaegerIndices...).
+		Size(0). // set to 0 because we don't want actual documents.
+		Aggregation(traceIDAggregation, aggregation).
+		IgnoreUnavailable(true).
+		Query(boolQuery)
 	searchResult, err := searchService.Do(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("search services failed: %w", err)
@@ -543,6 +571,7 @@ func (s *SpanReader) findTraceIDs(ctx context.Context, traceQuery *spanstore.Tra
 
 	traceIDBuckets := bucket.Buckets
 	return bucketToStringArray(traceIDBuckets)
+
 }
 
 func (s *SpanReader) buildTraceIDAggregation(numOfTraces int) elastic.Aggregation {
@@ -633,7 +662,6 @@ func (s *SpanReader) buildTagQuery(k string, v string) elastic.Query {
 	// but configuration can change over time
 	return elastic.NewBoolQuery().Should(queries...)
 }
-
 
 func (s *SpanReader) buildRootSpanQuery(isRootSpan bool) elastic.Query {
 	return elastic.NewTermQuery(rootSpanField, isRootSpan)
