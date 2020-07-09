@@ -291,7 +291,7 @@ func hitsToStringArray(searchHits []*elastic.SearchHit) ([]string, error) {
 	strings := make([]string, len(searchHits))
 	for i, hit := range searchHits {
 
-		var sourceFields .SourceFields
+		var sourceFields SourceFields
 		// Notice the dereferencing asterisk *
 		err := json.Unmarshal(*hit.Source, &sourceFields)
 		if err != nil {
