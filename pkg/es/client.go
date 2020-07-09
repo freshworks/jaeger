@@ -67,6 +67,7 @@ type SearchService interface {
 	IgnoreUnavailable(ignoreUnavailable bool) SearchService
 	Query(query elastic.Query) SearchService
 	Do(ctx context.Context) (*elastic.SearchResult, error)
+	Sort(field string, ascending bool) SearchService
 }
 
 // MultiSearchService is an abstraction for elastic.MultiSearchService

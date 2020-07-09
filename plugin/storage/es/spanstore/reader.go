@@ -523,9 +523,10 @@ func (s *SpanReader) findTraceIDs(ctx context.Context, traceQuery *spanstore.Tra
 	if len(traceQuery.Tags) == 0 {
 		searchService = s.client.Search(jaegerIndices...).
 			Size(0). // set to 0 because we don't want actual documents.
+			Sort(startTimeField, false).
 			IgnoreUnavailable(true).
-			Query(boolQuery).
-			Sort(startTimeField, false)
+			Query(boolQuery)
+			
 	} 
 
 	searchResult, err := searchService.Do(ctx)

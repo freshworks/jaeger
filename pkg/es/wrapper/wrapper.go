@@ -210,6 +210,11 @@ func (s SearchServiceWrapper) Query(query elastic.Query) es.SearchService {
 	return WrapESSearchService(s.searchService.Query(query))
 }
 
+// Sort calls this function to internal service.
+func (s SearchServiceWrapper) Sort(field string, ascending bool) es.SearchService {
+	return WrapESSearchService(s.searchService.Sort(field, ascending))
+}
+
 // Do calls this function to internal service.
 func (s SearchServiceWrapper) Do(ctx context.Context) (*elastic.SearchResult, error) {
 	return s.searchService.Do(ctx)
