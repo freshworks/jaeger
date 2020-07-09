@@ -513,11 +513,19 @@ func (s *SpanReader) findTraceIDs(ctx context.Context, traceQuery *spanstore.Tra
 	boolQuery := s.buildFindTraceIDsQuery(traceQuery)
 	jaegerIndices := s.timeRangeIndices(s.spanIndexPrefix, traceQuery.StartTimeMin, traceQuery.StartTimeMax)
 
-	searchService := s.client.Search(jaegerIndices...).
-		Size(0). // set to 0 because we don't want actual documents.
-		Aggregation(traceIDAggregation, aggregation).
-		IgnoreUnavailable(true).
-		Query(boolQuery)
+	if len(traceQuery.Tags) == 0 {
+		searchService := s.client.Search(jaegerIndices...).
+			Size(0). // set to 0 because we don't want actual documents.
+			IgnoreUnavailable(true).
+			Query(boolQuery).
+			Sort(startTimeField, "desc")
+	} else {
+		searchService := s.client.Search(jaegerIndices...).
+			Size(0). // set to 0 because we don't want actual documents.
+			Aggregation(traceIDAggregation, aggregation).
+			IgnoreUnavailable(true).
+			Query(boolQuery)
+	}
 
 	searchResult, err := searchService.Do(ctx)
 	if err != nil {
@@ -573,6 +581,12 @@ func (s *SpanReader) buildFindTraceIDsQuery(traceQuery *spanstore.TraceQueryPara
 		boolQuery.Must(operationNameQuery)
 	}
 
+	//add root_span query
+	if len(traceQuery.Tags) == 0 {
+		rootSpanQuery := s.buildRootSpanQuery(true)
+		boolQuery.Must(rootSpanQuery)
+	}
+
 	for k, v := range traceQuery.Tags {
 		tagQuery := s.buildTagQuery(k, v)
 		boolQuery.Must(tagQuery)
@@ -616,6 +630,11 @@ func (s *SpanReader) buildTagQuery(k string, v string) elastic.Query {
 
 	// but configuration can change over time
 	return elastic.NewBoolQuery().Should(queries...)
+}
+
+
+func (s *SpanReader) buildRootSpanQuery(isRootSpan bool) elastic.Query {
+	return elastic.NewTermQuery(rootSpanField, isRootSpan)
 }
 
 func (s *SpanReader) buildNestedQuery(field string, k string, v string) elastic.Query {
