@@ -50,6 +50,7 @@ const (
 	startTimeField         = "startTime"
 	serviceNameField       = "process.serviceName"
 	operationNameField     = "operationName"
+	rootSpanField          = "__root_span"
 	objectTagsField        = "tag"
 	objectProcessTagsField = "process.tag"
 	nestedTagsField        = "tags"
