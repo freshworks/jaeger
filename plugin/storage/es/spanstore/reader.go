@@ -514,19 +514,19 @@ func (s *SpanReader) findTraceIDs(ctx context.Context, traceQuery *spanstore.Tra
 	boolQuery := s.buildFindTraceIDsQuery(traceQuery)
 	jaegerIndices := s.timeRangeIndices(s.spanIndexPrefix, traceQuery.StartTimeMin, traceQuery.StartTimeMax)
 
-	if len(traceQuery.Tags) == 0 {
-		searchService := s.client.Search(jaegerIndices...).
-			Size(0). // set to 0 because we don't want actual documents.
-			IgnoreUnavailable(true).
-			Query(boolQuery).
-			Sort(startTimeField, false)
-	} else {
-		searchService := s.client.Search(jaegerIndices...).
+    searchService := s.client.Search(jaegerIndices...).
 			Size(0). // set to 0 because we don't want actual documents.
 			Aggregation(traceIDAggregation, aggregation).
 			IgnoreUnavailable(true).
 			Query(boolQuery)
-	}
+	
+	if len(traceQuery.Tags) == 0 {
+		searchService = s.client.Search(jaegerIndices...).
+			Size(0). // set to 0 because we don't want actual documents.
+			IgnoreUnavailable(true).
+			Query(boolQuery).
+			Sort(startTimeField, false)
+	} 
 
 	searchResult, err := searchService.Do(ctx)
 	if err != nil {
