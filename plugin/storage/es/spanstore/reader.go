@@ -292,10 +292,9 @@ func hitsToStringArray(searchHits []*elastic.SearchHit) ([]string, error) {
 	for i, hit := range searchHits {
 
 		var sourceFields SourceFields
-		// Notice the dereferencing asterisk *
 		err := json.Unmarshal(*hit.Source, &sourceFields)
 		if err != nil {
-			return nil, errors.New("non-string key found in aggregation")
+			return nil, errors.New("Error in unmarshalling _source")
 		}
 		str := string(sourceFields.TraceID)
 		strings[i] = str
