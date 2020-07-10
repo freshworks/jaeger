@@ -533,6 +533,7 @@ func (s *SpanReader) findTraceIDs(ctx context.Context, traceQuery *spanstore.Tra
 	boolQuery := s.buildFindTraceIDsQuery(traceQuery)
 	jaegerIndices := s.timeRangeIndices(s.spanIndexPrefix, traceQuery.StartTimeMin, traceQuery.StartTimeMax)
 
+	// Query without aggregation if tags are empty
 	if len(traceQuery.Tags) == 0 {
 		fetchSourceContext := elastic.NewFetchSourceContext(true).Include("traceID")
 		searchService := s.client.Search(jaegerIndices...).
@@ -611,10 +612,12 @@ func (s *SpanReader) buildFindTraceIDsQuery(traceQuery *spanstore.TraceQueryPara
 		boolQuery.Must(operationNameQuery)
 	}
 
-	//add root_span query
+	//add root_span query only tags are empty and operationName filter is not present
 	if len(traceQuery.Tags) == 0 {
+		// if traceQuery.OperationName == "" {
 		rootSpanQuery := s.buildRootSpanQuery(true)
 		boolQuery.Must(rootSpanQuery)
+		// }
 	}
 
 	for k, v := range traceQuery.Tags {
