@@ -614,10 +614,10 @@ func (s *SpanReader) buildFindTraceIDsQuery(traceQuery *spanstore.TraceQueryPara
 
 	//add root_span query only tags are empty and operationName filter is not present
 	if len(traceQuery.Tags) == 0 {
-		// if traceQuery.OperationName == "" {
-		rootSpanQuery := s.buildRootSpanQuery(true)
-		boolQuery.Must(rootSpanQuery)
-		// }
+		if traceQuery.OperationName == "" {
+			rootSpanQuery := s.buildRootSpanQuery(true)
+			boolQuery.Must(rootSpanQuery)
+		}
 	}
 
 	for k, v := range traceQuery.Tags {
