@@ -87,7 +87,8 @@ func (config *HaystackConfig) Validate(logger *zap.Logger) error {
 	return err
 }
 
-//ParseConfig receives a config file path, parse it and returns haystack span store config
+// ParseConfig receives a config file path, parse it and returns haystack span store config
+// Not used
 func ParseConfig(filePath string, logger *zap.Logger) (*HaystackConfig, error) {
 	var haystackConfig *HaystackConfig
 	if filePath != "" { // read config from file

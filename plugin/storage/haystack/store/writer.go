@@ -24,7 +24,6 @@ type HaystackSpanWriter struct {
 	bulkProcessor   BulkProcessor
 	writeMetrics    *storageMetrics.WriteMetrics
 	esSpanConverter dbmodel.FromDomain
-	stop            bool // On close stops processing writeSpan method calls
 }
 
 // NewHaystackSpanWriter creates a new haystack span writer for jaeger
@@ -54,11 +53,10 @@ func NewHaystackSpanWriter(config config.HaystackConfig, logger *zap.Logger, met
 		}
 	}
 	spanWriter.esSpanConverter = dbmodel.NewFromDomain(config.EsAllTagsAsFields, tags, config.EsTagsAsFieldsDotReplacement)
-
 	spanWriter.bulkProcessor = NewBulkProcessor(logger, config, spanWriter.writeCh, spanWriter.writeMetrics)
-
 	// start bulkProcessor to read haystack spans and write to proxy service
 	spanWriter.bulkProcessor.Start()
+
 	return spanWriter, nil
 }
 
@@ -69,10 +67,6 @@ func (sw *HaystackSpanWriter) WriteSpan(span *model.Span) error {
 			sw.logger.Warn("recovered from panic", zap.Any("error", r))
 		}
 	}()
-
-	if sw.stop {
-		return nil
-	}
 
 	// Transform span into es span model
 	esSpan := sw.esSpanConverter.FromDomainEmbedProcess(span)
@@ -108,10 +102,8 @@ func (sw *HaystackSpanWriter) WriteSpan(span *model.Span) error {
 func (sw *HaystackSpanWriter) Close() error {
 	sw.logger.Info("Stopping haystack span writer...")
 	sw.logger.Info("Closing haystack storage request pipe")
-	sw.stop = true              // stop accepting spans from collector
-	time.Sleep(time.Second * 5) // Waiting 5 sec before closing the writeCh pipe
-	close(sw.writeCh)           // Allows pending writeSpan() method calls to complete if waiting on writeCh to be available for send
-	sw.bulkProcessor.Stop()     // Stops Consuming spans from writeCh
+	close(sw.writeCh)
+	sw.bulkProcessor.Stop() // Stops Consuming spans from writeCh
 	sw.logger.Info("Stopped haystack span writer...")
 	return nil
 }

@@ -2,15 +2,14 @@ package store
 
 import (
 	"encoding/json"
-	"fmt"
 	"sync"
 	"time"
 
-	"go.uber.org/zap"
-	"github.com/jaegertracing/jaeger/plugin/storage/haystack/store/objects"
-	storageMetrics "github.com/jaegertracing/jaeger/storage/spanstore/metrics"
 	"github.com/jaegertracing/jaeger/plugin/storage/haystack/store/client"
 	"github.com/jaegertracing/jaeger/plugin/storage/haystack/store/config"
+	"github.com/jaegertracing/jaeger/plugin/storage/haystack/store/objects"
+	storageMetrics "github.com/jaegertracing/jaeger/storage/spanstore/metrics"
+	"go.uber.org/zap"
 )
 
 // bulkProcessor is responsible for starting concurrent worker threads
@@ -98,11 +97,12 @@ func (b *bulkProcessor) Stop() {
 
 func (b *bulkProcessor) isCommitRequired(batch *[]objects.HaystackSpan, batchSizeSoFar *int) bool {
 	length := len(*batch)
-	span := &(*batch)[length-1]
-	*batchSizeSoFar = *batchSizeSoFar + span.Size()
-	fmt.Println()
-	if length == b.bulkActions || *batchSizeSoFar >= b.bulkSize {
-		return true
+	if length > 0 {
+		span := &(*batch)[length-1]
+		*batchSizeSoFar = *batchSizeSoFar + span.Size()
+		if length >= b.bulkActions || *batchSizeSoFar >= b.bulkSize {
+			return true
+		}
 	}
 	return false
 }

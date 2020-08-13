@@ -6,6 +6,12 @@ import (
 	"github.com/jaegertracing/jaeger/plugin/storage/es/spanstore/dbmodel"
 )
 
+// SPAN TYPE
+const (
+	TYPE_SPAN    = "span"
+	TYPE_SERVICE = "service"
+)
+
 type HaystackSpan struct {
 	Meta        MetaData    `json:"meta"`
 	Message     interface{} `json:"msg"`
@@ -49,7 +55,7 @@ func TransformToHaystackSpan(span *dbmodel.Span, jsonMsgFormat bool) (HaystackSp
 	}
 	haystackSpan = HaystackSpan{
 		Meta: MetaData{
-			Type:        "span",
+			Type:        TYPE_SPAN,
 			ServiceName: span.Process.ServiceName,
 		},
 		Message:     message,

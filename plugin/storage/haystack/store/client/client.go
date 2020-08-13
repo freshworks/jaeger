@@ -2,12 +2,21 @@ package client
 
 import (
 	"bytes"
-	"go.uber.org/zap"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"time"
 
 	"github.com/jaegertracing/jaeger/plugin/storage/haystack/store/config"
+	"go.uber.org/zap"
+)
+
+const (
+	ERROR_RECEIVED_NON_SUCCESS_RESPONSE_CODE = "Received non 204 success code"
+)
+
+var (
+	ErrReceivedNonSuccessResponseCode = errors.New(ERROR_RECEIVED_NON_SUCCESS_RESPONSE_CODE)
 )
 
 type HttpClient struct {
@@ -66,6 +75,7 @@ func (c *HttpClient) Post(batch []byte) error {
 			}
 		}
 		c.logger.Warn("Received non 204 response status code", zap.Int("statusCode", response.StatusCode), zap.String("response", responseMsg))
+		return ErrReceivedNonSuccessResponseCode
 	}
 	return nil
 }

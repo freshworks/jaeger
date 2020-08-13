@@ -49,7 +49,7 @@ func TransformToHaystackServiceSpan(service *HaystackService, jsonMsgFormat bool
 	}
 	haystackServiceSpan = HaystackSpan{
 		Meta: MetaData{
-			Type:        "service",
+			Type:        TYPE_SERVICE,
 			ServiceName: service.ServiceName,
 		},
 		Message:     message,
