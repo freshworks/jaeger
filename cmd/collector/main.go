@@ -95,15 +95,14 @@ func main() {
 			c.Start(collectorOpts)
 
 			svc.RunAndThen(func() {
+				if err := c.Close(); err != nil {
+					logger.Error("failed to cleanly close the collector", zap.Error(err))
+				}
 				if closer, ok := spanWriter.(io.Closer); ok {
 					err := closer.Close()
 					if err != nil {
 						logger.Error("failed to close span writer", zap.Error(err))
 					}
-				}
-
-				if err := c.Close(); err != nil {
-					logger.Error("failed to cleanly close the collector", zap.Error(err))
 				}
 			})
 			return nil
