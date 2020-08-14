@@ -294,7 +294,7 @@ func hitsToStringArray(searchHits []*elastic.SearchHit) ([]string, error) {
 		var sourceFields SourceFields
 		err := json.Unmarshal(*hit.Source, &sourceFields)
 		if err != nil {
-			return nil, errors.New("Error in unmarshalling _source")
+			return nil, errors.New("error in unmarshalling _source")
 		}
 		str := string(sourceFields.TraceID)
 		strings[i] = str

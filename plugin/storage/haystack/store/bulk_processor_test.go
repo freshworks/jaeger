@@ -64,7 +64,6 @@ func TestBulkProcessor_Commit(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, 1, p.Size)
 		assert.Equal(t, 1, len(p.Events))
-		return
 	}
 	server := startMockESCluster(jobHandler)
 	bp.(*bulkProcessor).httpClient.SetEndpoint(server.URL)

@@ -43,7 +43,6 @@ func TestPost(t *testing.T) {
 	t.Log("Test endpoint returns non success response status code")
 	failureJobHandler := func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
 	server := startMockESCluster(failureJobHandler)
 	httpClient.endpoint = server.URL
@@ -53,7 +52,6 @@ func TestPost(t *testing.T) {
 	t.Log("Test endpoint returns success response status code")
 	successJobHandler := func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
-		return
 	}
 	server = startMockESCluster(successJobHandler)
 	httpClient.endpoint = server.URL

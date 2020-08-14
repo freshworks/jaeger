@@ -20,7 +20,6 @@ type bulkProcessor struct {
 	workerCount        int
 	bulkSize           int
 	bulkActions        int
-	batchMessageSize   int
 	batchFlushInterval int
 	request            <-chan objects.HaystackSpan
 	writeMetrics       *storageMetrics.WriteMetrics
@@ -92,7 +91,6 @@ func (b *bulkProcessor) Start() {
 
 func (b *bulkProcessor) Stop() {
 	b.waitGroup.Wait() // Wait un till all worker goroutines return.
-	return
 }
 
 func (b *bulkProcessor) isCommitRequired(batch *[]objects.HaystackSpan, batchSizeSoFar *int) bool {
@@ -114,7 +112,7 @@ func (b *bulkProcessor) commit(batch *[]objects.HaystackSpan, batchSize int, wor
 		start          = time.Now()
 	)
 	defer func() {
-		diff := time.Now().Sub(start)
+		diff := time.Since(start)
 		b.logger.Debug("Time elapsed to perform commit operation", zap.String("duration", diff.String()), zap.Int("batchSizeInBytes", batchSize), zap.Int("batchLength", len(*batch)), zap.Int("workerId", workerId))
 		b.writeMetrics.Emit(err, diff)
 	}()

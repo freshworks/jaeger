@@ -98,6 +98,9 @@ func ParseConfig(filePath string, logger *zap.Logger) (*HaystackConfig, error) {
 			return nil, err
 		}
 		err = yaml.Unmarshal(yamlFile, haystackConfig)
+		if err != nil {
+			return nil, err
+		}
 	} else { // read config from environment variables
 		v := viper.New()
 		v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))

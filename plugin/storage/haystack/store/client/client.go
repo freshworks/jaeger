@@ -11,12 +11,8 @@ import (
 	"go.uber.org/zap"
 )
 
-const (
-	ERROR_RECEIVED_NON_204_STATUS_CODE = "Received non 204 success code"
-)
-
 var (
-	ErrReceivedNon204StatusCode = errors.New(ERROR_RECEIVED_NON_204_STATUS_CODE)
+	ErrReceivedNon204StatusCode = errors.New("received non 204 success code")
 )
 
 type HttpClient struct {

@@ -1,7 +1,6 @@
 package store
 
 import (
-	"fmt"
 	"go.uber.org/zap"
 	"time"
 
@@ -106,16 +105,4 @@ func (sw *HaystackSpanWriter) Close() error {
 	sw.bulkProcessor.Stop() // Stops Consuming spans from writeCh
 	sw.logger.Info("Stopped haystack span writer...")
 	return nil
-}
-
-// Not used
-func (sw *HaystackSpanWriter) dropEmptyTags(tags []model.KeyValue) []model.KeyValue {
-	for i, tag := range tags {
-		if tag.Key == "" {
-			tags[i] = tags[len(tags)-1] // Copy last element to index i.
-			tags = tags[:len(tags)-1]   // Truncate slice.
-			sw.logger.Warn(fmt.Sprintf("Found tag empty key: %s, dropping tag..", tag.String()))
-		}
-	}
-	return tags
 }
