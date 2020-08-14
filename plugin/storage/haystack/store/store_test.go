@@ -17,6 +17,8 @@ func TestNewHaystackStore(t *testing.T) {
 	logger, err := zap.NewDevelopment()
 	assert.Nil(t, err)
 	metricsFactory := metrics.NullFactory
+	cfg.ProxyURL = "test"
+	cfg.AuthToken = "test"
 	store := NewHaystackStore(cfg, logger, metricsFactory)
 	assert.NotEmpty(t, store)
 }
