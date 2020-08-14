@@ -4,12 +4,10 @@ import (
 	"encoding/json"
 	"flag"
 	"go.uber.org/zap"
-	"io/ioutil"
 	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -85,63 +83,6 @@ func (config *HaystackConfig) Validate(logger *zap.Logger) error {
 		err = errors.New("No auth token provided in the config. " + errStr)
 	}
 	return err
-}
-
-// ParseConfig receives a config file path, parse it and returns haystack span store config
-// Not used
-func ParseConfig(filePath string, logger *zap.Logger) (*HaystackConfig, error) {
-	var haystackConfig *HaystackConfig
-	if filePath != "" { // read config from file
-		haystackConfig = &HaystackConfig{}
-		yamlFile, err := ioutil.ReadFile(filePath)
-		if err != nil {
-			return nil, err
-		}
-		err = yaml.Unmarshal(yamlFile, haystackConfig)
-		if err != nil {
-			return nil, err
-		}
-	} else { // read config from environment variables
-		v := viper.New()
-		v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-		v.SetDefault(httpRequestTimeout, DEFAULT_HTTP_REQUEST_TIMEOUT)
-		v.SetDefault(bulkActions, DEFAULT_BULK_ACTIONS)
-		v.SetDefault(bulkSize, DEFAULT_BULK_SIZE) // bytes
-		v.SetDefault(spanBatchFlushInterval, DEFAULT_BULK_FLUSH_INTERVAL)
-		v.SetDefault(spanServiceCacheSize, DEFAULT_SERVICE_CACHE_SIZE)
-		v.SetDefault(spanServiceCacheTTL, DEFAULT_SERVICE_CACHE_TTL)
-		v.SetDefault(workersCount, DEFAULT_BULK_WORKERS)
-		v.SetDefault(enableJsonMsgFormat, DEFAULT_ENABLE_JSON_MSG_FORMAT)
-		v.SetDefault(httpMaxIdleConns, DEFAULT_HTTP_MAX_IDLE_CONNECTIONS)
-		v.SetDefault(httpMaxIdleConnsPerHost, DEFAULT_HTTP_MAX_IDLE_CONNECTIONS_PER_HOST)
-		v.SetDefault(esAllTagsAsFields, DEFAULT_ES_ALL_TAGS_AS_FIELDS)
-		v.SetDefault(esTagsAsFieldsConfigFile, DEFAULT_ES_TAGS_AS_FIELDS_CONFIG_FILE)
-		v.SetDefault(esTagsAsFieldsDotReplacement, DEFAULT_ES_TAGS_AS_FIELDS_DOT_REPLACEMENT)
-		v.AutomaticEnv()
-
-		haystackConfig = &HaystackConfig{
-			AuthToken:                    v.GetString(authToken),
-			ProxyURL:                     v.GetString(proxyURL),
-			HttpRequestTimeout:           v.GetInt(httpRequestTimeout),
-			BulkActions:                  v.GetInt(bulkActions),
-			BulkSize:                     v.GetInt(bulkSize),
-			SpanBatchFlushInterval:       v.GetInt(spanBatchFlushInterval),
-			SpanServiceCacheSize:         v.GetInt(spanServiceCacheSize),
-			SpanServiceCacheTTL:          v.GetInt(spanServiceCacheTTL),
-			WorkersCount:                 v.GetInt(workersCount),
-			EnableJsonMsgFormat:          v.GetBool(enableJsonMsgFormat),
-			HttpMaxIdleConns:             v.GetInt(httpMaxIdleConns),
-			HttpMaxIdleConnsPerHost:      v.GetInt(httpMaxIdleConnsPerHost),
-			EsAllTagsAsFields:            v.GetBool(esAllTagsAsFields),
-			EsTagsAsFieldsConfigFile:     v.GetString(esTagsAsFieldsConfigFile),
-			EsTagsAsFieldsDotReplacement: v.GetString(esTagsAsFieldsDotReplacement),
-		}
-	}
-
-	if err := haystackConfig.Validate(logger); err != nil {
-		return nil, err
-	}
-	return haystackConfig, nil
 }
 
 // used for logging

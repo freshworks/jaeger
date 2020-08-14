@@ -18,7 +18,7 @@ func NewHaystackStore(config config.HaystackConfig, logger *zap.Logger, metricsF
 	reader := NewHaystackSpanReader(config, logger)
 	writer, err := NewHaystackSpanWriter(config, logger, metricsFactory)
 	if err != nil {
-		logger.Error("Failed to create haystack span writer ", zap.String("error", err.Error()))
+		logger.Fatal("Failed to create haystack span writer ", zap.String("error", err.Error()))
 	}
 	return &Store{
 		reader: reader,
