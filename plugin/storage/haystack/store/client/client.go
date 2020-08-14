@@ -12,11 +12,11 @@ import (
 )
 
 const (
-	ERROR_RECEIVED_NON_SUCCESS_RESPONSE_CODE = "Received non 204 success code"
+	ERROR_RECEIVED_NON_204_STATUS_CODE = "Received non 204 success code"
 )
 
 var (
-	ErrReceivedNonSuccessResponseCode = errors.New(ERROR_RECEIVED_NON_SUCCESS_RESPONSE_CODE)
+	ErrReceivedNon204StatusCode = errors.New(ERROR_RECEIVED_NON_204_STATUS_CODE)
 )
 
 type HttpClient struct {
@@ -42,6 +42,10 @@ func NewHttpClient(config config.HaystackConfig, logger *zap.Logger) *HttpClient
 		endpoint:  config.ProxyURL,
 		logger:    logger,
 	}
+}
+
+func (c *HttpClient) SetEndpoint(endpoint string) {
+	c.endpoint = endpoint
 }
 
 func (c *HttpClient) Post(batch []byte) error {
@@ -75,7 +79,7 @@ func (c *HttpClient) Post(batch []byte) error {
 			}
 		}
 		c.logger.Warn("Received non 204 response status code", zap.Int("statusCode", response.StatusCode), zap.String("response", responseMsg))
-		return ErrReceivedNonSuccessResponseCode
+		return ErrReceivedNon204StatusCode
 	}
 	return nil
 }

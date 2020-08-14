@@ -1,6 +1,9 @@
 package store
 
 import (
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/jaegertracing/jaeger/plugin/storage/haystack/store/config"
@@ -43,7 +46,29 @@ func TestBulkProcessor_IsCommitRequired(t *testing.T) {
 }
 
 func TestBulkProcessor_Commit(t *testing.T) {
+	var (
+		batch = []objects.HaystackSpan{objects.HaystackSpan{
+			Meta: objects.MetaData{
+				ServiceName: "test",
+				Type:        "span",
+			},
+			Message: "test",
+		}}
+		batchSize = 100
+	)
+	bp := testNewBulkProcessor(t)
 
+	var jobHandler = func(w http.ResponseWriter, r *http.Request) {
+		var p = objects.HaystackSpanBatchEvent{}
+		err := json.NewDecoder(r.Body).Decode(&p)
+		assert.Nil(t, err)
+		assert.Equal(t, 1, p.Size)
+		assert.Equal(t, 1, len(p.Events))
+		return
+	}
+	server := startMockESCluster(jobHandler)
+	bp.(*bulkProcessor).httpClient.SetEndpoint(server.URL)
+	bp.(*bulkProcessor).commit(&batch, batchSize, 0)
 }
 
 func testNewBulkProcessor(t *testing.T) BulkProcessor {
@@ -57,4 +82,10 @@ func testNewBulkProcessor(t *testing.T) BulkProcessor {
 	writeMetrics := storageMetrics.NewWriteMetrics(metricsFactory, "bulk_index")
 	bp := NewBulkProcessor(logger, cfg, request, writeMetrics)
 	return bp
+}
+
+func startMockESCluster(jobHandler func(_ http.ResponseWriter, r *http.Request)) *httptest.Server {
+	server := httptest.NewUnstartedServer(http.HandlerFunc(jobHandler))
+	server.Start()
+	return server
 }

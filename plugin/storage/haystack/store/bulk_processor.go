@@ -91,7 +91,7 @@ func (b *bulkProcessor) Start() {
 }
 
 func (b *bulkProcessor) Stop() {
-	b.waitGroup.Wait()
+	b.waitGroup.Wait() // Wait un till all worker goroutines return.
 	return
 }
 
