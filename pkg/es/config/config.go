@@ -16,11 +16,13 @@
 package config
 
 import (
+	"bufio"
 	"context"
 	"crypto/tls"
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -372,4 +374,24 @@ func loadToken(path string) (string, error) {
 		return "", err
 	}
 	return strings.TrimRight(string(b), "\r\n"), nil
+}
+
+// LoadTagsFromFile loads tags from a file
+func LoadTagsFromFile(filePath string) ([]string, error) {
+	file, err := os.Open(filepath.Clean(filePath))
+	if err != nil {
+		return nil, err
+	}
+	scanner := bufio.NewScanner(file)
+	var tags []string
+	for scanner.Scan() {
+		line := scanner.Text()
+		if tag := strings.TrimSpace(line); tag != "" {
+			tags = append(tags, tag)
+		}
+	}
+	if err := file.Close(); err != nil {
+		return nil, err
+	}
+	return tags, nil
 }
