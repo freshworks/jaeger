@@ -71,7 +71,7 @@ func (sw *HaystackSpanWriter) WriteSpan(span *model.Span) error {
 	esSpan := sw.esSpanConverter.FromDomainEmbedProcess(span)
 
 	// Transform es span into haystack span model
-	haystackSpan, err := objects.TransformToHaystackSpan(esSpan, sw.config.EnableJsonMsgFormat)
+	haystackSpan, err := objects.TransformToHaystackSpan(esSpan, sw.config.EnableJSONMsgFormat)
 	if err != nil {
 		sw.logger.Error("Failed to transform jaeger span to haystack span model", zap.String("error", err.Error()))
 		return err
@@ -87,7 +87,7 @@ func (sw *HaystackSpanWriter) WriteSpan(span *model.Span) error {
 		}
 
 		// Transform span into haystack span model
-		haystackServiceSpan, err := objects.TransformToHaystackServiceSpan(service, sw.config.EnableJsonMsgFormat)
+		haystackServiceSpan, err := objects.TransformToHaystackServiceSpan(service, sw.config.EnableJSONMsgFormat)
 		if err != nil {
 			sw.logger.Error("Failed to transform service span to haystack span model", zap.String("error", err.Error()))
 			return err

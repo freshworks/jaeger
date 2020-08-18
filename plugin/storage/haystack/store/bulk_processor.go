@@ -13,10 +13,10 @@ import (
 )
 
 // bulkProcessor is responsible for starting concurrent worker threads
-// worker threads are responsible for batching and sending data to storage endpoint
+// worker goroutines are responsible for batching and sending data to storage endpoint
 type bulkProcessor struct {
 	logger             *zap.Logger
-	httpClient         *client.HttpClient
+	httpClient         *client.HTTPClient
 	workerCount        int
 	bulkSize           int
 	bulkActions        int
@@ -26,15 +26,17 @@ type bulkProcessor struct {
 	waitGroup          sync.WaitGroup
 }
 
+// BulkProcessor interface
 type BulkProcessor interface {
 	Start()
 	Stop()
 }
 
+// NewBulkProcessor constructor
 func NewBulkProcessor(logger *zap.Logger, cf config.HaystackConfig, request <-chan objects.HaystackSpan, writeMetrics *storageMetrics.WriteMetrics) BulkProcessor {
 	return &bulkProcessor{
 		logger:             logger,
-		httpClient:         client.NewHttpClient(cf, logger),
+		httpClient:         client.NewHTTPClient(cf, logger),
 		workerCount:        cf.WorkersCount,
 		bulkActions:        cf.BulkActions,
 		bulkSize:           cf.BulkSize,
@@ -45,6 +47,7 @@ func NewBulkProcessor(logger *zap.Logger, cf config.HaystackConfig, request <-ch
 	}
 }
 
+// Start BulkProcessor service span worker goroutines to read spans concurrently
 func (b *bulkProcessor) Start() {
 	b.logger.Info("Starting bulk processor workers", zap.Int("workersCount", b.workerCount))
 	for i := 0; i < b.workerCount; i++ {
@@ -89,6 +92,7 @@ func (b *bulkProcessor) Start() {
 	}
 }
 
+// Stops BulkProcessor
 func (b *bulkProcessor) Stop() {
 	b.waitGroup.Wait() // Wait un till all worker goroutines return.
 }
@@ -105,7 +109,7 @@ func (b *bulkProcessor) isCommitRequired(batch *[]objects.HaystackSpan, batchSiz
 	return false
 }
 
-func (b *bulkProcessor) commit(batch *[]objects.HaystackSpan, batchSize int, workerId int) {
+func (b *bulkProcessor) commit(batch *[]objects.HaystackSpan, batchSize int, workerID int) {
 	var (
 		err            error
 		spanBatchBytes []byte
@@ -113,7 +117,7 @@ func (b *bulkProcessor) commit(batch *[]objects.HaystackSpan, batchSize int, wor
 	)
 	defer func() {
 		diff := time.Since(start)
-		b.logger.Debug("Time elapsed to perform commit operation", zap.String("duration", diff.String()), zap.Int("batchSizeInBytes", batchSize), zap.Int("batchLength", len(*batch)), zap.Int("workerId", workerId))
+		b.logger.Debug("Time elapsed to perform commit operation", zap.String("duration", diff.String()), zap.Int("batchSizeInBytes", batchSize), zap.Int("batchLength", len(*batch)), zap.Int("workerId", workerID))
 		b.writeMetrics.Emit(err, diff)
 	}()
 

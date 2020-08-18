@@ -36,6 +36,6 @@ func TestTransformToHaystackSpan(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, string(expectedMessage), string(actualMessage))
 	assert.Equal(t, serviceName, haystackSpan.Meta.ServiceName)
-	assert.Equal(t, TYPE_SPAN, haystackSpan.Meta.Type)
+	assert.Equal(t, TypeSpan, haystackSpan.Meta.Type)
 	assert.GreaterOrEqual(t, len(expectedMessage), haystackSpan.Size())
 }

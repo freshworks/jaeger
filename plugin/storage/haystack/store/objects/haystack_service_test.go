@@ -40,7 +40,7 @@ func TestTransformToHaystackServiceSpan(t *testing.T) {
 
 	haystackServiceSpan, err := TransformToHaystackServiceSpan(haystackService, false)
 	assert.Nil(t, err)
-	assert.Equal(t, TYPE_SERVICE, haystackServiceSpan.Meta.Type)
+	assert.Equal(t, TypeService, haystackServiceSpan.Meta.Type)
 	assert.Equal(t, serviceName, haystackServiceSpan.Meta.ServiceName)
 	expected, err := json.Marshal(haystackService)
 	assert.Nil(t, err)

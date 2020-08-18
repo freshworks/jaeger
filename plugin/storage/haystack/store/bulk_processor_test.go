@@ -33,7 +33,7 @@ func TestBulkProcessor_IsCommitRequired(t *testing.T) {
 	ok = bp.(*bulkProcessor).isCommitRequired(&batch, &batchSizeSoFar)
 	assert.Equal(t, false, ok)
 
-	batchSizeSoFar = config.DEFAULT_BULK_SIZE + 100000
+	batchSizeSoFar = config.DefaultBulkSize + 100000
 	ok = bp.(*bulkProcessor).isCommitRequired(&batch, &batchSizeSoFar)
 	assert.Equal(t, true, ok)
 

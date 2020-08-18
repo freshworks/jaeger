@@ -15,21 +15,21 @@ func TestConfig(t *testing.T) {
 
 	cfg.InitFromViper(v)
 	assert.NotEmpty(t, cfg)
-	assert.Equal(t, cfg.EsAllTagsAsFields, DEFAULT_ES_ALL_TAGS_AS_FIELDS)
-	assert.Equal(t, cfg.EsTagsAsFieldsConfigFile, DEFAULT_ES_TAGS_AS_FIELDS_CONFIG_FILE)
-	assert.Equal(t, cfg.EsTagsAsFieldsDotReplacement, DEFAULT_ES_TAGS_AS_FIELDS_DOT_REPLACEMENT)
-	assert.Equal(t, cfg.HttpMaxIdleConnsPerHost, DEFAULT_HTTP_MAX_IDLE_CONNECTIONS_PER_HOST)
-	assert.Equal(t, cfg.HttpMaxIdleConns, DEFAULT_HTTP_MAX_IDLE_CONNECTIONS)
-	assert.Equal(t, cfg.HttpRequestTimeout, DEFAULT_HTTP_REQUEST_TIMEOUT)
+	assert.Equal(t, cfg.EsAllTagsAsFields, DefaultEsAllTagsAsFields)
+	assert.Equal(t, cfg.EsTagsAsFieldsConfigFile, DefaultEsTagsAsFieldsConfigFile)
+	assert.Equal(t, cfg.EsTagsAsFieldsDotReplacement, DefaultEsTagsAsFieldsDotReplacement)
+	assert.Equal(t, cfg.HTTPMaxIdleConnsPerHost, DefaultHTTPMaxIdleConnectionsPerHosts)
+	assert.Equal(t, cfg.HTTPMaxIdleConns, DefaultHTTPMaxIdleConnections)
+	assert.Equal(t, cfg.HTTPRequestTimeout, DefaultHTTPRequestTimeout)
 	assert.Equal(t, cfg.ProxyURL, "")
 	assert.Equal(t, cfg.AuthToken, "")
-	assert.Equal(t, cfg.BulkSize, DEFAULT_BULK_SIZE)
-	assert.Equal(t, cfg.BulkActions, DEFAULT_BULK_ACTIONS)
-	assert.Equal(t, cfg.SpanBatchFlushInterval, DEFAULT_BULK_FLUSH_INTERVAL)
-	assert.Equal(t, cfg.WorkersCount, DEFAULT_BULK_WORKERS)
-	assert.Equal(t, cfg.EnableJsonMsgFormat, DEFAULT_ENABLE_JSON_MSG_FORMAT)
-	assert.Equal(t, cfg.SpanServiceCacheTTL, DEFAULT_SERVICE_CACHE_TTL)
-	assert.Equal(t, cfg.SpanServiceCacheSize, DEFAULT_SERVICE_CACHE_SIZE)
+	assert.Equal(t, cfg.BulkSize, DefaultBulkSize)
+	assert.Equal(t, cfg.BulkActions, DefaultBulkActions)
+	assert.Equal(t, cfg.SpanBatchFlushInterval, DefaultBulkFlushInterval)
+	assert.Equal(t, cfg.WorkersCount, DefaultBulkWorkers)
+	assert.Equal(t, cfg.EnableJSONMsgFormat, DefaultEnableJSONMsgFormat)
+	assert.Equal(t, cfg.SpanServiceCacheTTL, DefaultServiceCacheTTL)
+	assert.Equal(t, cfg.SpanServiceCacheSize, DefaultServiceCacheSize)
 
 	logger, e := zap.NewDevelopment()
 	assert.Nil(t, e)
@@ -51,7 +51,7 @@ func TestConfig(t *testing.T) {
 		workersCount,
 		spanServiceCacheSize,
 		spanServiceCacheTTL,
-		enableJsonMsgFormat,
+		enableJSONMsgFormat,
 
 		esAllTagsAsFields,
 		esTagsAsFieldsConfigFile,

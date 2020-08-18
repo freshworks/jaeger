@@ -8,11 +8,13 @@ import (
 	"go.uber.org/zap"
 )
 
+// Store struct defines reader and writer storage objects
 type Store struct {
 	reader *HaystackSpanReader
 	writer *HaystackSpanWriter
 }
 
+// NewHaystackStore Constructor
 func NewHaystackStore(config config.HaystackConfig, logger *zap.Logger, metricsFactory metrics.Factory) *Store {
 	logger.Info("Initialized haystack storage...")
 	reader := NewHaystackSpanReader(config, logger)
@@ -26,18 +28,22 @@ func NewHaystackStore(config config.HaystackConfig, logger *zap.Logger, metricsF
 	}
 }
 
+// Close the storage writer .
 func (store *Store) Close() {
 	store.writer.Close()
 }
 
+// SpanReader return storage reader
 func (store *Store) SpanReader() spanstore.Reader {
 	return store.reader
 }
 
+// SpanWriter return storage writer
 func (store *Store) SpanWriter() spanstore.Writer {
 	return store.writer
 }
 
+// DependencyReader return storage writer
 func (store *Store) DependencyReader() dependencystore.Reader {
 	return store.reader
 }

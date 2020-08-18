@@ -30,6 +30,7 @@ func (service *HaystackService) HashCode() (string, error) {
 	return fmt.Sprintf("%x", hash.Sum64()), err
 }
 
+// TransformToHaystackServiceSpan converts service span into HaystackSpan model
 func TransformToHaystackServiceSpan(service *HaystackService, jsonMsgFormat bool) (HaystackSpan, error) {
 	var (
 		haystackServiceSpan = HaystackSpan{}
@@ -49,7 +50,7 @@ func TransformToHaystackServiceSpan(service *HaystackService, jsonMsgFormat bool
 	}
 	haystackServiceSpan = HaystackSpan{
 		Meta: MetaData{
-			Type:        TYPE_SERVICE,
+			Type:        TypeService,
 			ServiceName: service.ServiceName,
 		},
 		Message:     message,

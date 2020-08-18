@@ -8,35 +8,41 @@ import (
 
 // SPAN TYPE
 const (
-	TYPE_SPAN    = "span"
-	TYPE_SERVICE = "service"
+	TypeSpan    = "span"
+	TypeService = "service"
 )
 
+// HaystackSpan struct specifies the haystack storage span model
 type HaystackSpan struct {
 	Meta        MetaData    `json:"meta"`
 	Message     interface{} `json:"msg"`
 	messageSize int
 }
 
+// MetaData struct contains meta info
 type MetaData struct {
 	Type        string `json:"type"`
 	ServiceName string `json:"serviceName"`
 }
 
+// HaystackSpanBatchEvent struct specifies batch request
 type HaystackSpanBatchEvent struct {
 	Events []HaystackSpan `json:"events"`
 	Size   int            `json:"size"`
 }
 
+// Used for testing and logging
 func (hs *HaystackSpan) String() string {
 	haystackSpanBytes, _ := json.Marshal(hs)
 	return string(haystackSpanBytes)
 }
 
+// Size returns the span message size in bytes
 func (hs *HaystackSpan) Size() int {
 	return hs.messageSize
 }
 
+// TransformToHaystackSpan converts dbmode.Span into HaystackSpan model
 func TransformToHaystackSpan(span *dbmodel.Span, jsonMsgFormat bool) (HaystackSpan, error) {
 	var (
 		haystackSpan = HaystackSpan{}
@@ -55,7 +61,7 @@ func TransformToHaystackSpan(span *dbmodel.Span, jsonMsgFormat bool) (HaystackSp
 	}
 	haystackSpan = HaystackSpan{
 		Meta: MetaData{
-			Type:        TYPE_SPAN,
+			Type:        TypeSpan,
 			ServiceName: span.Process.ServiceName,
 		},
 		Message:     message,

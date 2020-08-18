@@ -12,27 +12,29 @@ import (
 )
 
 var (
-	ErrReceivedNon204StatusCode = errors.New("received non 204 success code")
+	errReceivedNon204StatusCode = errors.New("received non 204 success code")
 )
 
-type HttpClient struct {
+// HTTPClient struct defines http.Client
+type HTTPClient struct {
 	client    *http.Client
 	authToken string
 	endpoint  string
 	logger    *zap.Logger
 }
 
-func NewHttpClient(config config.HaystackConfig, logger *zap.Logger) *HttpClient {
+// NewHTTPClient constructor
+func NewHTTPClient(config config.HaystackConfig, logger *zap.Logger) *HTTPClient {
 	var defaultTransport http.RoundTripper = &http.Transport{
 		Proxy:               http.ProxyFromEnvironment,
-		MaxIdleConns:        config.HttpMaxIdleConns,
-		MaxIdleConnsPerHost: config.HttpMaxIdleConnsPerHost,
-		IdleConnTimeout:     time.Duration(config.HttpRequestTimeout) * time.Second,
+		MaxIdleConns:        config.HTTPMaxIdleConns,
+		MaxIdleConnsPerHost: config.HTTPMaxIdleConnsPerHost,
+		IdleConnTimeout:     time.Duration(config.HTTPRequestTimeout) * time.Second,
 	}
 
 	client := &http.Client{Transport: defaultTransport}
 
-	return &HttpClient{
+	return &HTTPClient{
 		client:    client,
 		authToken: config.AuthToken,
 		endpoint:  config.ProxyURL,
@@ -40,11 +42,13 @@ func NewHttpClient(config config.HaystackConfig, logger *zap.Logger) *HttpClient
 	}
 }
 
-func (c *HttpClient) SetEndpoint(endpoint string) {
+// SetEndpoint sets the endpoint
+func (c *HTTPClient) SetEndpoint(endpoint string) {
 	c.endpoint = endpoint
 }
 
-func (c *HttpClient) Post(batch []byte) error {
+// Post sends request to endpoint
+func (c *HTTPClient) Post(batch []byte) error {
 	req, err := http.NewRequest(http.MethodPost, c.endpoint, bytes.NewBuffer(batch))
 	if err != nil {
 		c.logger.Error("failed to create new batch request", zap.String("error", err.Error()))
@@ -75,7 +79,7 @@ func (c *HttpClient) Post(batch []byte) error {
 			}
 		}
 		c.logger.Warn("Received non 204 response status code", zap.Int("statusCode", response.StatusCode), zap.String("response", responseMsg))
-		return ErrReceivedNon204StatusCode
+		return errReceivedNon204StatusCode
 	}
 	return nil
 }

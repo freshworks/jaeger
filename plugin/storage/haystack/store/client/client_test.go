@@ -19,7 +19,7 @@ func TestNewHttpClient(t *testing.T) {
 	logger, err := zap.NewDevelopment()
 	assert.Nil(t, err)
 	cfg.InitFromViper(v)
-	httpClient := NewHttpClient(cfg, logger)
+	httpClient := NewHTTPClient(cfg, logger)
 	assert.NotEmpty(t, httpClient)
 	assert.NotEmpty(t, httpClient.client)
 	assert.Equal(t, httpClient.authToken, "")
@@ -34,7 +34,7 @@ func TestPost(t *testing.T) {
 	logger, e := zap.NewDevelopment()
 	assert.Nil(t, e)
 	cfg.InitFromViper(v)
-	httpClient := NewHttpClient(cfg, logger)
+	httpClient := NewHTTPClient(cfg, logger)
 
 	t.Log("Test endpoint empty error case")
 	e = httpClient.Post(nil)
